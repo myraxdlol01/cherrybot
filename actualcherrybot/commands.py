@@ -65,11 +65,11 @@ class GeneralCommands(commands.Cog):
     async def help_command(self, ctx: discord.Interaction):
         """Shows this help message with paged embeds."""
 
-        categories: dict[str, list[tuple[str, str]]] = {
-            "fun": [],
-            "security & moderation": [],
-            "utilities": [],
-        }
+ pd2rut-codex/add-and-improve-command-functionality
+        # build embeds grouped by category
+        embeds: list[discord.Embed] = []
+        categories: dict[str, list[tuple[str, str]]] = {}
+
         seen: set[str] = set()
         all_commands = list(self.bot.commands) + list(self.bot.tree.walk_commands())
         for cmd in all_commands:
