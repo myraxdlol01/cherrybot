@@ -1,4 +1,4 @@
-"""fun and utility @commands.hybrid_group(time, hug, 8ball, weather, cat) in a chill lowercase embed style."""
+"""minimal fun and utility commands: uptime, weather, remind, define, 8ball, coinflip, roll, choose, meme, avatar, cat."""
 import random
 import datetime
 import asyncio
@@ -7,7 +7,6 @@ from typing import Optional
 import discord
 
 INVIS_COLOR = discord.Color.from_rgb(47, 49, 54)
-NUMBER_EMOJIS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
 from discord.ext import commands
 from discord import app_commands
 import aiohttp
@@ -52,7 +51,7 @@ class FunCommands(commands.Cog):
     async def eight_ball(self, ctx: commands.Context, *, question: str | None = None):
         """magic 8-ball response."""
         if question is None:
-            embed = discord.Embed(title="8ball", description="ask me a yes/no question like '!8ball will it rain today?'", color=INVIS_COLOR)
+            embed = discord.Embed(title="8ball", description="ask me a yes/no question like '/8ball will it rain today?'", color=INVIS_COLOR)
             await ctx.send(embed=embed)
             return
         response = random.choice(EIGHT_BALL_RESPONSES)
@@ -97,7 +96,7 @@ class FunCommands(commands.Cog):
         async def _wait_and_dm():
             await asyncio.sleep(minutes*60)
             try:
-                await ctx.author.send(f"⏰ reminder: {text.lower()}")
+                await ctx.author.send(f"reminder: {text.lower()}")
             except discord.Forbidden:
                 pass
         asyncio.create_task(_wait_and_dm())
