@@ -65,9 +65,11 @@ class GeneralCommands(commands.Cog):
     async def help_command(self, ctx: discord.Interaction):
         """Shows this help message with paged embeds."""
 
-        # build embeds grouped by category
-        embeds: list[discord.Embed] = []
-        categories: dict[str, list[tuple[str, str]]] = {}
+        categories: dict[str, list[tuple[str, str]]] = {
+            "fun": [],
+            "security & moderation": [],
+            "utilities": [],
+        }
         seen: set[str] = set()
         all_commands = list(self.bot.commands) + list(self.bot.tree.walk_commands())
         for cmd in all_commands:
@@ -87,6 +89,7 @@ class GeneralCommands(commands.Cog):
                 cat = "utilities"
             categories.setdefault(cat, []).append((name, desc))
 
+        embeds: list[discord.Embed] = []
         for title, items in categories.items():
             emb = discord.Embed(title=f"{title} commands", color=INVIS_COLOR)
             for n, d in items:
