@@ -57,9 +57,14 @@ class GeneralCommands(commands.Cog):
 
     @commands.command(name="about")
     async def about(self, ctx: commands.Context):
-        """short info about the bot."""
-        desc = "minimal discord bot with moderation and utilities."
-        await ctx.send(embed=discord.Embed(title="about", description=desc, color=INVIS_COLOR))
+"""Provides information about the bot."""
+embed = discord.Embed(
+    title="about",
+    description="bot made by cherieware's lead developer. this cozy nyan cat bot is here to make your day brighter! featuring many commands like 'ping' (shows latency), 'about' (info about the bot), and 'help' (lists all commands).",
+    color=INVIS_COLOR
+)
+await ctx.send(embed=embed)
+
 
     @app_commands.command(name="help", description="show all commands")
     async def help_command(self, ctx: discord.Interaction):
@@ -67,7 +72,12 @@ class GeneralCommands(commands.Cog):
 
         # build embeds grouped by category
         embeds: list[discord.Embed] = []
-        categories: dict[str, list[tuple[str, str]]] = {}
+categories: dict[str, list[tuple[str, str]]] = {
+    "fun": [],
+    "security & moderation": [],
+    "utilities": [],
+}
+
         seen: set[str] = set()
         all_commands = list(self.bot.commands) + list(self.bot.tree.walk_commands())
         for cmd in all_commands:
@@ -79,10 +89,11 @@ class GeneralCommands(commands.Cog):
             seen.add(name)
             desc = (getattr(cmd, "help", None) or getattr(cmd, "description", None) or "no description provided.").lower()
             cog = getattr(cmd, "cog_name", None) or (getattr(cmd, "binding", None).__class__.__name__ if getattr(cmd, "binding", None) else "")
-            if cog in ("ModerationCommands", "Security"):
-                cat = "moderation"
-            elif cog in ("FunCommands",):
-                cat = "fun"
+if cog in ("FunCommands",):
+    categories["fun"].append((name, desc))
+elif cog in ("ModerationCommands", "Moderation", "Security") or name.startswith("z!securitysetup"):
+    categories["security & moderation"].append((name, desc))
+
             else:
                 cat = "utilities"
             categories.setdefault(cat, []).append((name, desc))
