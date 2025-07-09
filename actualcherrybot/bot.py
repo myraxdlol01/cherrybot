@@ -76,7 +76,7 @@ async def on_command_error(ctx: commands.Context, error: Exception):
         return  # silently ignore unknown commands
     elif isinstance(error, commands.MissingRequiredArgument):
         emb.title = "missing argument"
-        emb.description = f"usage: `!{ctx.command.qualified_name} {ctx.command.signature}`"
+        emb.description = f"usage: `/{ctx.command.qualified_name} {ctx.command.signature}`"
     elif isinstance(error, commands.BadArgument):
         emb.title = "bad argument"
         emb.description = str(error).lower()
