@@ -104,7 +104,7 @@ class TimezoneCommands(commands.Cog):
     async def tz_current(self, ctx: commands.Context):
         """show your saved timezone."""
         user_id = str(ctx.author.id)
-        zone = self.timezones.get(user_id)
+        zone = self.user_zones.get(user_id)
         if not zone:
             await ctx.send(embed=discord.Embed(title="timezone", description="no timezone set. use /tz set <zone> first.", color=INVIS_COLOR))
             return
