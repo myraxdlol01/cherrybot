@@ -57,6 +57,7 @@ class GeneralCommands(commands.Cog):
 
     @commands.command(name="about")
     async def about(self, ctx: commands.Context):
+ 6p72lc-codex/add-and-improve-command-functionality
         """short info about the bot."""
         desc = "minimal discord bot with moderation and utilities."
         await ctx.send(embed=discord.Embed(title="about", description=desc, color=INVIS_COLOR))
@@ -65,9 +66,12 @@ class GeneralCommands(commands.Cog):
     async def help_command(self, ctx: discord.Interaction):
         """Shows this help message with paged embeds."""
 
-        # build embeds grouped by category
-        embeds: list[discord.Embed] = []
-        categories: dict[str, list[tuple[str, str]]] = {}
+        categories: dict[str, list[tuple[str, str]]] = {
+            "fun": [],
+            "security & moderation": [],
+            "utilities": [],
+        }
+ main
         seen: set[str] = set()
         all_commands = list(self.bot.commands) + list(self.bot.tree.walk_commands())
         for cmd in all_commands:
@@ -79,14 +83,15 @@ class GeneralCommands(commands.Cog):
             seen.add(name)
             desc = (getattr(cmd, "help", None) or getattr(cmd, "description", None) or "no description provided.").lower()
             cog = getattr(cmd, "cog_name", None) or (getattr(cmd, "binding", None).__class__.__name__ if getattr(cmd, "binding", None) else "")
+6p72lc-codex/add-and-improve-command-functionality
             if cog in ("ModerationCommands", "Security"):
                 cat = "moderation"
             elif cog in ("FunCommands",):
                 cat = "fun"
-            else:
                 cat = "utilities"
             categories.setdefault(cat, []).append((name, desc))
 
+        embeds: list[discord.Embed] = []
         for title, items in categories.items():
             emb = discord.Embed(title=f"{title} commands", color=INVIS_COLOR)
             for n, d in items:
