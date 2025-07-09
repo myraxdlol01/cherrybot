@@ -101,21 +101,6 @@ async def on_command_error(ctx: commands.Context, error: Exception):
     except discord.Forbidden:
         pass  # can't send anything
 
-# text prefix support removed
-@commands.has_permissions(manage_guild=True)
-async def prefix_cmd(ctx: commands.Context, sub: str = None, *, new_prefix: str = None):
-    """change or display the server prefix. usage: z!prefix set <new>"""
-    guild_id = str(ctx.guild.id)
-    current = prefix_cache.get(guild_id, "z!")
-    if sub != "set":
-        await ctx.send(f"current prefix is `{current}`")
-        return
-    if not new_prefix:
-        await ctx.send("please provide a new prefix.")
-        return
-    prefix_cache[guild_id] = new_prefix
-    save_prefixes(prefix_cache)
-    await ctx.send(f"prefix updated to `{new_prefix}`")
 
 if __name__ == "__main__":
     if not TOKEN:

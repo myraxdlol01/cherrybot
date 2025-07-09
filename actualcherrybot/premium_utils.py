@@ -73,14 +73,14 @@ def is_premium_guild(guild_id: int | None) -> bool:
 # mutation helpers – keep cache + disk in sync and optionally give roles
 # ---------------------------------------------------------------------------
 
-aSYNC_ROLE_NAME = "premium"  # role name in guilds
+ROLE_NAME = "premium"  # role name in guilds
 
 async def _ensure_premium_role(guild: discord.Guild) -> discord.Role | None:
     """Return existing premium role or attempt to create it."""
-    role = discord.utils.get(guild.roles, name=aSYNC_ROLE_NAME)
+    role = discord.utils.get(guild.roles, name=ROLE_NAME)
     if role is None:
         try:
-            role = await guild.create_role(name=aSYNC_ROLE_NAME, colour=discord.Colour.purple(), reason="premium role")
+            role = await guild.create_role(name=ROLE_NAME, colour=discord.Colour.purple(), reason="premium role")
         except discord.Forbidden:
             return None
     return role
