@@ -57,14 +57,14 @@ class PremiumAdmin(commands.Cog):
     @commands.is_owner()
     async def add_user(self, inter: Interaction, user: discord.User):
         await grant_premium_user(self.bot, user.id)
-        await inter.response.send_message(f"✅ {user.mention} is now premium.")
+        await inter.response.send_message(f"{user.mention} is now premium.")
 
     @premium.command(name="remove_user", description="revoke premium from a user")
     @app_commands.describe(user="user to revoke")
     @commands.is_owner()
     async def remove_user(self, inter: Interaction, user: discord.User):
         revoke_premium_user(user.id)
-        await inter.response.send_message(f"❌ {user.mention} premium revoked.")
+        await inter.response.send_message(f"{user.mention} premium revoked.")
 
 
 async def setup(bot: commands.Bot):

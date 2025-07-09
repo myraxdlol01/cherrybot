@@ -1,4 +1,4 @@
-"""timezone commands: !tz, !tz set <zone>, !tz change <zone> (lowercase embeds)"""
+"""timezone utilities for setting and viewing your timezone."""
 import json
 import datetime
 from pathlib import Path
@@ -75,7 +75,7 @@ class TimezoneCommands(commands.Cog):
         user_id = str(ctx.author.id)
         zone_name = self.user_zones.get(user_id)
         if not zone_name:
-            embed = discord.Embed(title="timezone", description="no timezone saved. use '!tz set <zone>' to save yours.", color=INVIS_COLOR)
+            embed = discord.Embed(title="timezone", description="no timezone saved. use '/tz set <zone>' to save yours.", color=INVIS_COLOR)
             await ctx.send(embed=embed)
             return
         try:
@@ -85,7 +85,7 @@ class TimezoneCommands(commands.Cog):
             embed = discord.Embed(title="timezone", description=desc, color=INVIS_COLOR)
             await ctx.send(embed=embed)
         except ZoneInfoNotFoundError:
-            embed = discord.Embed(title="timezone", description="saved timezone seems invalid. please change it with '!tz change <zone>'.", color=INVIS_COLOR)
+            embed = discord.Embed(title="timezone", description="saved timezone seems invalid. please change it with '/tz change <zone>'.", color=INVIS_COLOR)
             await ctx.send(embed=embed)
 
     # set subcommand
@@ -94,7 +94,7 @@ class TimezoneCommands(commands.Cog):
         """save your timezone (first time)."""
         user_id = str(ctx.author.id)
         if user_id in self.user_zones:
-            embed = discord.Embed(title="timezone", description="timezone already set. use '!tz change <zone>' to update it.", color=INVIS_COLOR)
+            embed = discord.Embed(title="timezone", description="timezone already set. use '/tz change <zone>' to update it.", color=INVIS_COLOR)
             await ctx.send(embed=embed)
             return
         await self._update_timezone(ctx, user_id, zone, new=True)
@@ -104,7 +104,7 @@ class TimezoneCommands(commands.Cog):
     async def tz_current(self, ctx: commands.Context):
         """show your saved timezone."""
         user_id = str(ctx.author.id)
-        zone = self.timezones.get(user_id)
+        zone = self.user_zones.get(user_id)
         if not zone:
             await ctx.send(embed=discord.Embed(title="timezone", description="no timezone set. use /tz set <zone> first.", color=INVIS_COLOR))
             return
