@@ -106,6 +106,37 @@ class ModerationCommands(commands.Cog):
         except discord.Forbidden:
             await self._safe_send(interaction, discord.Embed(title="permission error", description="i don't have permission to ban.", color=INVIS_COLOR))
 
+    @commands.command(name="massban")
+    @commands.has_permissions(ban_members=True)
+    async def massban(self, ctx: commands.Context, members: commands.Greedy[discord.Member]):
+        """ban multiple members at once (prefix only)."""
+        if not members:
+            await self._safe_send(ctx, discord.Embed(title="massban", description="no members given.", color=INVIS_COLOR))
+            return
+        banned = 0
+        for m in members:
+            try:
+                await m.ban(reason=f"massban by {ctx.author}", delete_message_days=0)
+                banned += 1
+            except discord.Forbidden:
+                pass
+        desc = f"banned {banned} member(s)."
+        embed = discord.Embed(title="massban", description=desc, color=INVIS_COLOR)
+        await self._safe_send(ctx, embed)
+        await self._log(ctx.guild, embed)
+
+    @app_commands.command(name="unban", description="unban a user by id")
+    @commands.has_permissions(ban_members=True)
+    async def unban(self, interaction: discord.Interaction, user_id: str):
+        try:
+            user_obj = await self.bot.fetch_user(int(user_id))
+            await interaction.guild.unban(user_obj)
+            embed = discord.Embed(title="unban", description=f"unbanned {user_obj}.", color=INVIS_COLOR)
+            await self._safe_send(interaction, embed)
+            await self._log(interaction.guild, embed)
+        except Exception:
+            await self._safe_send(interaction, discord.Embed(title="unban", description="could not unban that user.", color=INVIS_COLOR))
+
     @app_commands.command(name="timeout", description="timeout (mute) a member for <minutes>")
     @commands.has_permissions(moderate_members=True)
     async def timeout(self, interaction: discord.Interaction, member: discord.Member, minutes: int, reason: str | None = None):
@@ -133,6 +164,20 @@ class ModerationCommands(commands.Cog):
         deleted = await interaction.channel.purge(limit=count + 1)
         desc = f"deleted {len(deleted)-1} messages."
         embed = discord.Embed(title="purge", description=desc.lower(), color=INVIS_COLOR)
+        await self._safe_send(interaction, embed)
+        await self._log(interaction.guild, embed)
+
+    @app_commands.command(name="purge_user", description="delete a user's messages (max 100)")
+    @commands.has_permissions(manage_messages=True)
+    async def purge_user(self, interaction: discord.Interaction, member: discord.Member, count: int):
+        if not 1 <= count <= 100:
+            await self._safe_send(interaction, discord.Embed(title="purge_user", description="count must be 1-100.", color=INVIS_COLOR))
+            return
+        def check(m: discord.Message) -> bool:
+            return m.author.id == member.id
+        deleted = await interaction.channel.purge(limit=count, check=check)
+        desc = f"deleted {len(deleted)} messages from {member}."
+        embed = discord.Embed(title="purge_user", description=desc.lower(), color=INVIS_COLOR)
         await self._safe_send(interaction, embed)
         await self._log(interaction.guild, embed)
 
@@ -170,6 +215,16 @@ class ModerationCommands(commands.Cog):
         embed = discord.Embed(title="unlock", description="channel unlocked.", color=INVIS_COLOR)
         await self._safe_send(interaction, embed)
         await self._log(interaction.guild, embed)
+
+    @app_commands.command(name="modlog", description="show the moderation log channel")
+    @commands.has_permissions(manage_guild=True)
+    async def modlog(self, interaction: discord.Interaction):
+        chan = await self._get_log_channel(interaction.guild)
+        if chan:
+            desc = f"logs are in {chan.mention}"
+        else:
+            desc = "could not create log channel."
+        await self._safe_send(interaction, discord.Embed(title="modlog", description=desc, color=INVIS_COLOR))
 
     @app_commands.command(name="warn", description="warn a member")
     @commands.has_permissions(manage_messages=True)

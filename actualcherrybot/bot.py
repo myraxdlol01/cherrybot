@@ -23,8 +23,8 @@ async def _rotate_status():
     statuses = [
         discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} servers"),
         discord.Activity(type=discord.ActivityType.listening, name=f"{prefix}help"),
-        discord.Activity(type=discord.ActivityType.watching, name=f"over your server and protecting it!"),
-        discord.Game("with cute cats"),
+        discord.Activity(type=discord.ActivityType.watching, name="over your server and protecting it!"),
+        discord.Game("with the bats"),
     ]
     _rotate_status.idx = (_rotate_status.idx + 1) % len(statuses)  # type: ignore
     await bot.change_presence(activity=statuses[_rotate_status.idx], status=discord.Status.online)
