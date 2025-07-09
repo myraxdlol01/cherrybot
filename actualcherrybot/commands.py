@@ -23,16 +23,43 @@ class GeneralCommands(commands.Cog):
         except discord.Forbidden:
             await ctx.reply(url)
 
-    @commands.hybrid_command(name="servercount", description="how many servers I am in")
+    @commands.hybrid_command(name="servercount", description="how many servers i am in")
     async def servercount(self, ctx: commands.Context):
         """shows how many servers the bot is in."""
-        await ctx.response.send_message(f"i'm currently in **{len(ctx.bot.guilds)}** servers.")
+        await ctx.reply(f"i'm currently in **{len(ctx.bot.guilds)}** servers.")
+
+    @commands.hybrid_command(name="userinfo")
+    async def userinfo(self, ctx: commands.Context, member: discord.Member | None = None):
+        """show information about a user."""
+        target = member or ctx.author
+        joined = target.joined_at.strftime("%Y-%m-%d") if target.joined_at else "unknown"
+        created = target.created_at.strftime("%Y-%m-%d")
+        embed = discord.Embed(title="userinfo", color=INVIS_COLOR)
+        embed.add_field(name="id", value=str(target.id), inline=False)
+        embed.add_field(name="created", value=created, inline=True)
+        embed.add_field(name="joined", value=joined, inline=True)
+        embed.set_thumbnail(url=target.display_avatar.url)
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(name="serverinfo")
+    async def serverinfo(self, ctx: commands.Context):
+        """show information about this server."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send(embed=discord.Embed(title="serverinfo", description="not in a server.", color=INVIS_COLOR))
+            return
+        embed = discord.Embed(title="serverinfo", description=guild.name, color=INVIS_COLOR)
+        embed.add_field(name="id", value=str(guild.id), inline=False)
+        embed.add_field(name="members", value=str(guild.member_count), inline=True)
+        if guild.owner:
+            embed.add_field(name="owner", value=str(guild.owner), inline=True)
+        await ctx.send(embed=embed)
 
     @commands.command(name="about")
     async def about(self, ctx: commands.Context):
         """Provides information about the bot."""
         embed = discord.Embed(title="about", description="bot made by cherieware's lead developer. this cozy nyan cat bot is here to make your day brighter! featuring many commands like 'ping' (shows latency), 'about' (info about the bot), and 'help' (lists all commands).", color=INVIS_COLOR)
-        await ctx.response.send_message(embed=embed)
+        await ctx.send(embed=embed)
 
     @app_commands.command(name="help", description="show all commands")
     async def help_command(self, ctx: discord.Interaction):
@@ -45,12 +72,17 @@ class GeneralCommands(commands.Cog):
             "security & moderation": [],
             "utilities": [],
         }
-        for cmd in self.bot.commands:
-            if cmd.hidden:
+        seen: set[str] = set()
+        all_commands = list(self.bot.commands) + list(self.bot.tree.walk_commands())
+        for cmd in all_commands:
+            if getattr(cmd, "hidden", False):
                 continue
-            desc = (cmd.help or cmd.description or "no description provided.").lower()
             name = f"/{cmd.qualified_name}".lower()
-            cog = cmd.cog_name or ""
+            if name in seen:
+                continue
+            seen.add(name)
+            desc = (getattr(cmd, "help", None) or getattr(cmd, "description", None) or "no description provided.").lower()
+            cog = getattr(cmd, "cog_name", None) or (getattr(cmd, "binding", None).__class__.__name__ if getattr(cmd, "binding", None) else "")
             if cog in ("FunCommands",):
                 categories["fun"].append((name, desc))
             elif cog in ("ModerationCommands", "Moderation", "Security") or name.startswith("z!securitysetup"):

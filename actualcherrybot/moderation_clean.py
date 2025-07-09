@@ -56,12 +56,26 @@ class ModerationCommands(commands.Cog):
             except Exception:
                 pass
 
-    async def _safe_send(self, ctx: commands.Context, embed: discord.Embed):
+    async def _safe_send(self, target, embed: discord.Embed):
+        """Send an embed to either a context or interaction."""
         try:
-            await ctx.send(embed=embed)
+            if isinstance(target, discord.Interaction):
+                if not target.response.is_done():
+                    await target.response.send_message(embed=embed)
+                else:
+                    await target.followup.send(embed=embed)
+            else:
+                await target.send(embed=embed)
         except discord.Forbidden:
             try:
-                await ctx.send(embed.description or "error")
+                text = embed.description or "error"
+                if isinstance(target, discord.Interaction):
+                    if not target.response.is_done():
+                        await target.response.send_message(text)
+                    else:
+                        await target.followup.send(text)
+                else:
+                    await target.send(text)
             except Exception:
                 pass
 
@@ -169,7 +183,7 @@ class ModerationCommands(commands.Cog):
         await self._safe_send(interaction, embed)
         await self._log(interaction.guild, embed)
         try:
-            await member.send(f"⚠️ you were warned in {interaction.guild.name}: {reason.lower()}")
+            await member.send(f"you were warned in {interaction.guild.name}: {reason.lower()}")
         except discord.Forbidden:
             pass
 
@@ -183,7 +197,7 @@ class ModerationCommands(commands.Cog):
             return
         lines = [f"{idx+1}. {e['reason']} (mod <@{e['mod']}>)" for idx, e in enumerate(entries)]
         embed = discord.Embed(title="warnings", description="\n".join(lines), color=INVIS_COLOR)
-        await self._safe_send(ctx, embed)
+        await self._safe_send(interaction, embed)
 
     # ---------- error handler ----------
     async def cog_command_error(self, ctx: commands.Context, error: Exception):
