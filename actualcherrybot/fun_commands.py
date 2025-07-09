@@ -46,23 +46,6 @@ class FunCommands(commands.Cog):
         embed = discord.Embed(title="uptime", description=uptime_str, color=INVIS_COLOR)
         await ctx.send(embed=embed)
 
-    # hug command
-    @commands.hybrid_command(name="hug")
-    async def hug(self, ctx: commands.Context, member: Optional[discord.Member] = None):
-        """send a virtual hug."""
-        target = member or ctx.author
-        description = f"{ctx.author.mention} gives a warm hug to {target.mention}!" if member else f"sending a warm hug to you, {target.mention}!"
-        hug_gifs = [
-            "https://media.giphy.com/media/l2QDM9Jnim1YVILXa/giphy.gif",
-            "https://media.giphy.com/media/od5H3PmEG5EVq/giphy.gif",
-            "https://media.giphy.com/media/3M4NpbLCTxBqU/giphy.gif",
-            "https://media.giphy.com/media/wnsgren9NtITS/giphy.gif",
-            "https://media.giphy.com/media/143v0Z4767T15e/giphy.gif",
-        ]
-        gif_url = random.choice(hug_gifs)
-        embed = discord.Embed(title="hug", description=description.lower(), color=INVIS_COLOR)
-        embed.set_image(url=gif_url)
-        await ctx.send(embed=embed)
 
     # 8ball command
     @commands.hybrid_command(name="8ball")
@@ -136,30 +119,6 @@ class FunCommands(commands.Cog):
             description = "unexpected response."
         await ctx.send(embed=discord.Embed(title="define", description=description, color=INVIS_COLOR))
 
-    # poll command (owner only)
-    @commands.is_owner()
-    @commands.hybrid_command(name="poll")
-    async def poll(self, ctx: commands.Context, *, args: str):
-        """create a reaction poll. owner only. format: !poll \"question\" option1 | option2 ..."""
-        if "\"" not in args:
-            await ctx.send("format: !poll \"question\" option1 | option2 ...")
-            return
-        try:
-            parts = args.split("\"")
-            question = parts[1]
-            rest = "\"".join(parts[2:]).strip()
-            options = [opt.strip() for opt in rest.split("|") if opt.strip()]
-        except Exception:
-            await ctx.send("could not parse options.")
-            return
-        if not 2 <= len(options) <= 10:
-            await ctx.send("need between 2 and 10 options.")
-            return
-        embed = discord.Embed(title=question.lower(), color=INVIS_COLOR)
-        embed.description = "\n".join(f"{NUMBER_EMOJIS[idx]} {opt.lower()}" for idx, opt in enumerate(options))
-        poll_message = await ctx.send(embed=embed)
-        for idx in range(len(options)):
-            await poll_message.add_reaction(NUMBER_EMOJIS[idx])
 
         # coinflip command
     @commands.hybrid_command(name="coinflip", description="flip a coin")
@@ -167,6 +126,42 @@ class FunCommands(commands.Cog):
         """flip a coin and return heads or tails."""
         result = random.choice(["heads", "tails"])
         embed = discord.Embed(title="coinflip", description=result, color=INVIS_COLOR)
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(name="roll")
+    async def roll(self, ctx: commands.Context, sides: int = 6):
+        """roll a dice with <sides> faces (2-100)."""
+        if not 2 <= sides <= 100:
+            await ctx.send(embed=discord.Embed(title="roll", description="sides must be 2-100.", color=INVIS_COLOR))
+            return
+        result = random.randint(1, sides)
+        embed = discord.Embed(title="roll", description=f"you rolled {result} on a d{sides}.", color=INVIS_COLOR)
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(name="choose")
+    async def choose(self, ctx: commands.Context, *, options: str):
+        """pick a random option from a | separated list."""
+        items = [o.strip() for o in options.split("|") if o.strip()]
+        if len(items) < 2:
+            await ctx.send(embed=discord.Embed(title="choose", description="provide at least two options separated by |", color=INVIS_COLOR))
+            return
+        choice = random.choice(items)
+        embed = discord.Embed(title="choose", description=f"i pick {choice.lower()}.", color=INVIS_COLOR)
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(name="meme")
+    async def meme(self, ctx: commands.Context):
+        """send a random meme."""
+        async with self.session.get("https://meme-api.com/gimme") as resp:
+            if resp.status != 200:
+                await ctx.send(embed=discord.Embed(title="meme", description="could not fetch a meme.", color=INVIS_COLOR))
+                return
+            data = await resp.json()
+        title = str(data.get("title", "meme")).lower()
+        image_url = data.get("url")
+        embed = discord.Embed(title="meme", description=title, color=INVIS_COLOR)
+        if image_url:
+            embed.set_image(url=image_url)
         await ctx.send(embed=embed)
 
     # avatar command
